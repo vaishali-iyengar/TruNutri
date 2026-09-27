@@ -164,16 +164,16 @@ function ClaimsList({ claims }: { claims: Claim[] }) {
   if (claims.length === 0) return null;
   return (
     <div className="mt-4 border-t border-outline-variant/50 pt-3">
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-secondary">Claims</p>
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-secondary sm:text-xs">Claims</p>
       <ul className="flex flex-col gap-2">
         {claims.map((c, i) => (
           <li key={i} className="flex items-start gap-2.5 rounded-xl bg-surface-container-low px-3 py-2.5">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-container text-[10px] font-bold text-on-primary">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-container text-[11px] font-bold text-on-primary">
               {i + 1}
             </span>
-            <div className="flex-1 text-sm text-on-surface">
+            <div className="flex-1 text-sm text-on-surface sm:text-base">
               <p>{c.text}</p>
-              <span className="mt-1.5 inline-block rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60">
+              <span className="mt-1.5 inline-block rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 sm:text-xs">
                 Source: not yet available
               </span>
             </div>
@@ -196,6 +196,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // Skip on the empty landing state — otherwise this fires on mount and
+    // scrolls the (empty) message list into view, nudging the page down
+    // past the hero before the user has done anything.
+    if (messages.length === 0 && !pending) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, pending]);
 
@@ -281,7 +285,7 @@ export default function Home() {
             <h1 className="truncate font-display text-lg font-semibold leading-tight tracking-tight text-primary">
               TruNutri
             </h1>
-            <p className="truncate text-[11px] font-semibold uppercase leading-tight tracking-wider text-on-surface-variant">
+            <p className="truncate text-[11px] font-semibold uppercase leading-tight tracking-wider text-on-surface-variant sm:text-xs">
               Ask. Learn. Eat smarter.
             </p>
           </div>
@@ -303,19 +307,19 @@ export default function Home() {
               <div className="mx-auto max-w-2xl pt-6 text-center">
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-surface-container-low px-3.5 py-1.5 shadow-sm">
                   <span className="h-2 w-2 rounded-full bg-surface-tint" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-primary-container">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-primary-container sm:text-xs">
                     General Nutrition Guidance
                   </span>
                 </div>
 
-                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-container text-on-primary shadow-md">
-                  <LeafIcon className="h-7 w-7" />
+                <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-container text-on-primary shadow-md sm:h-14 sm:w-14">
+                  <LeafIcon className="h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
 
-                <h2 className="font-display text-3xl font-semibold leading-tight tracking-tight text-primary sm:text-4xl">
+                <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight text-primary sm:text-4xl md:text-5xl">
                   Ask anything about food, nutrition &amp; safety.
                 </h2>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-on-surface-variant">
+                <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-on-surface-variant sm:text-base">
                   Curious about an ingredient, a storage question, or what&apos;s actually in your food? Ask away —
                   or try one of these to see how it works.
                 </p>
@@ -330,21 +334,21 @@ export default function Home() {
                     >
                       <div>
                         <div className="mb-3 flex items-center justify-between">
-                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${TAG_STYLES[s.tone]}`}>
+                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold sm:text-xs ${TAG_STYLES[s.tone]}`}>
                             {s.tag}
                           </span>
                           <span className="text-outline">↗</span>
                         </div>
-                        <p className="font-display text-base font-semibold leading-snug text-primary">
+                        <p className="font-display text-base font-semibold leading-snug text-primary sm:text-lg">
                           {s.question}
                         </p>
                       </div>
-                      <span className="text-[11px] font-medium text-on-surface-variant">Example {s.tag.toLowerCase()} question</span>
+                      <span className="text-[11px] font-medium text-on-surface-variant sm:text-xs">Example {s.tag.toLowerCase()} question</span>
                     </button>
                   ))}
                 </div>
 
-                <p className="mt-8 text-[11px] font-medium text-on-surface-variant/70">
+                <p className="mt-8 text-[11px] font-medium text-on-surface-variant/70 sm:text-xs">
                   No ads · No affiliate links · General knowledge, not medical advice
                 </p>
               </div>
@@ -357,33 +361,33 @@ export default function Home() {
                   <div key={i} className={`flex items-start gap-2.5 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
                     <Avatar role={m.role} tone={tone} />
                     {m.role === "user" ? (
-                      <div className="max-w-[75%] rounded-2xl rounded-tr-sm bg-primary px-5 py-3 text-sm leading-relaxed text-on-primary shadow-sm">
+                      <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm leading-relaxed text-on-primary shadow-sm sm:max-w-[75%] sm:px-5 sm:py-3 sm:text-base">
                         {m.content}
                       </div>
                     ) : m.declined ? (
-                      <div className="max-w-[80%] rounded-2xl border-l-4 border-tertiary bg-tertiary-fixed/40 px-5 py-4 text-sm text-on-tertiary-fixed-variant shadow-sm">
-                        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-tertiary">
+                      <div className="max-w-[85%] rounded-2xl border-l-4 border-tertiary bg-tertiary-fixed/40 px-4 py-3 text-sm text-on-tertiary-fixed-variant shadow-sm sm:max-w-[80%] sm:px-5 sm:py-4 sm:text-base">
+                        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-tertiary sm:text-xs">
                           <WarningIcon className="h-3.5 w-3.5" />
                           Out of scope
                         </div>
                         <p className="leading-relaxed">{m.content}</p>
                       </div>
                     ) : m.isError ? (
-                      <div className="max-w-[80%] rounded-2xl border-l-4 border-error bg-error-container px-5 py-4 text-sm text-on-error-container shadow-sm">
-                        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-error">
+                      <div className="max-w-[85%] rounded-2xl border-l-4 border-error bg-error-container px-4 py-3 text-sm text-on-error-container shadow-sm sm:max-w-[80%] sm:px-5 sm:py-4 sm:text-base">
+                        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-error sm:text-xs">
                           <AlertIcon className="h-3.5 w-3.5" />
                           {m.isNetworkError ? "Connection error" : "Error"}
                         </div>
                         <p className="leading-relaxed">{m.content}</p>
                       </div>
                     ) : (
-                      <div className="relative max-w-[80%] overflow-hidden rounded-3xl bg-surface-container-lowest p-5 text-sm text-on-surface shadow-md">
+                      <div className="relative max-w-[85%] overflow-hidden rounded-3xl bg-surface-container-lowest p-4 text-sm text-on-surface shadow-md sm:max-w-[80%] sm:p-5 sm:text-base">
                         <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-surface-tint to-secondary-container" />
                         <div className="mb-2 flex items-center gap-2">
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-fixed text-primary">
                             <LeafIcon className="h-3.5 w-3.5" />
                           </span>
-                          <span className="text-sm font-semibold text-primary">TruNutri</span>
+                          <span className="text-sm font-semibold text-primary sm:text-base">TruNutri</span>
                         </div>
                         <AnswerText text={m.content} />
                         {m.claims && <ClaimsList claims={m.claims} />}
@@ -415,7 +419,7 @@ export default function Home() {
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Ask a question…"
                 disabled={pending}
-                className="flex-1 bg-transparent text-sm text-on-surface outline-none placeholder:text-outline"
+                className="flex-1 bg-transparent text-sm text-on-surface outline-none placeholder:text-outline sm:text-base"
               />
               <button
                 onClick={() => sendMessage()}
@@ -432,15 +436,15 @@ export default function Home() {
         <aside className="hidden w-80 shrink-0 flex-col border-l border-outline-variant/40 bg-surface-container-low/60 p-5 xl:flex">
           <div className="mb-1 flex items-center gap-2">
             <ClipboardIcon className="h-4 w-4 text-on-surface-variant" />
-            <h2 className="font-display text-base font-semibold text-primary">Cited Evidence</h2>
+            <h2 className="font-display text-base font-semibold text-primary 2xl:text-lg">Cited Evidence</h2>
           </div>
-          <p className="mb-4 text-xs text-on-surface-variant">Sources for this conversation</p>
+          <p className="mb-4 text-xs text-on-surface-variant 2xl:text-sm">Sources for this conversation</p>
           <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest px-4 py-6 text-center">
             <div className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface-container text-outline">
               <ClipboardIcon className="h-4 w-4" />
             </div>
-            <p className="text-sm font-semibold text-on-surface">Sources coming soon</p>
-            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+            <p className="text-sm font-semibold text-on-surface 2xl:text-base">Sources coming soon</p>
+            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant 2xl:text-sm">
               Linked citations for each claim will appear here in an upcoming update. For now, claims are shown
               without a source.
             </p>
