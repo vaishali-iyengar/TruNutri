@@ -94,6 +94,17 @@ function XIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+// Used instead of a plain "↗" unicode character — glyph fallback fonts for
+// that character differ across platforms (renders differently on mobile vs
+// desktop), while an SVG renders identically everywhere.
+function ArrowUpRightIcon({ className = "h-3 w-3" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M7 17 17 7M8 7h9v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 // Shared between the desktop sidebar and the mobile bottom sheet — same
 // placeholder content, Milestone 2 will make both read from real data.
 function SourcesPlaceholder() {
@@ -204,7 +215,7 @@ function ClaimsList({ claims, onSourceClick }: { claims: Claim[]; onSourceClick:
                 className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 transition hover:bg-surface-container hover:text-primary sm:text-xs"
               >
                 Source: not yet available
-                <span aria-hidden="true">↗</span>
+                <ArrowUpRightIcon className="h-2.5 w-2.5" />
               </button>
             </div>
           </li>
@@ -377,7 +388,7 @@ export default function Home() {
                           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold sm:text-xs ${TAG_STYLES[s.tone]}`}>
                             {s.tag}
                           </span>
-                          <span className="text-outline">↗</span>
+                          <ArrowUpRightIcon className="h-4 w-4 text-outline" />
                         </div>
                         <p className="font-display text-base font-semibold leading-snug text-primary sm:text-lg">
                           {s.question}
