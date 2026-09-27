@@ -35,6 +35,14 @@ Both Railway and Vercel deploy from a git repo, so this has to happen first.
 
 ## Step 1 — Railway: Backend + Postgres
 
+**✅ Done.** Live at `https://trunutri-production.up.railway.app`. Three real issues came up executing this step, none of them hypothetical:
+
+1. **Free-plan resource limit** — the first Railway account hit "Free plan resource provision limit exceeded" on `railway init`, because the account already had 2 other projects. Resolved by creating a fresh Railway account rather than touching the user's existing unrelated projects.
+2. **Orphaned service from a failed dashboard connection** — an earlier manual attempt to link the GitHub repo in the Railway dashboard failed with a generic "There was an error deploying from source." The service existed in the dashboard, but querying Railway's GraphQL API directly showed it had zero `ServiceInstance` records in any environment — a dangling shell, not a real deploy target. `serviceConnect`/`serviceInstanceUpdate` mutations against it succeeded but silently did nothing. Fixed by deleting that service and recreating it via `serviceCreate` with `source: { repo }` set at creation time, which produced a real instance immediately.
+3. **Groq model deprecation** — unrelated to Railway itself, only surfaced once the live smoke test ran. `llama-3.3-70b-versatile` no longer exists on Groq's side at all (confirmed via `GET /v1/models`); switched the default to `openai/gpt-oss-120b`. Full story in implementation-plan.md's Phase 7 entry and edge-cases.md.
+
+The steps below are kept as the reference procedure for next time (e.g. redeploying, or setting this up again from scratch) rather than rewritten as a narrative of what happened.
+
 1. Create a new Railway project.
 2. **Add a Postgres database** to the project first (Railway's own add-on) — this auto-creates a `DATABASE_URL`-shaped connection and makes it available to other services in the same project via Railway's variable references.
 3. **Add a service from your GitHub repo** (the same repo, not a separate one).
@@ -44,7 +52,7 @@ Both Railway and Vercel deploy from a git repo, so this has to happen first.
    | Var | Value |
    |---|---|
    | `GROQ_API_KEY` | your real key |
-   | `GROQ_MODEL` | `llama-3.3-70b-versatile` (or leave unset — this is the code default) |
+   | `GROQ_MODEL` | `openai/gpt-oss-120b` (or leave unset — this is the code default) |
    | `DATABASE_URL` | reference the Postgres add-on's connection string (Railway lets you reference another service's variable directly, e.g. `${{Postgres.DATABASE_URL}}`) |
    | `FRONTEND_ORIGIN` | a placeholder for now (e.g. `http://localhost:3000`) — **you will come back and fix this in Step 3** |
    | `PORT` | leave unset; Railway injects its own `PORT` and the app already reads `process.env.PORT` |
@@ -91,7 +99,7 @@ This matches implementation-plan.md's Phase 7 exit check: *"the public Vercel UR
 | Var | Platform | Notes |
 |---|---|---|
 | `GROQ_API_KEY` | Railway | Never in frontend code or any `NEXT_PUBLIC_*` var |
-| `GROQ_MODEL` | Railway | Optional, defaults to `llama-3.3-70b-versatile` in code |
+| `GROQ_MODEL` | Railway | Optional, defaults to `openai/gpt-oss-120b` in code |
 | `DATABASE_URL` | Railway | Reference the Postgres add-on's own variable, don't hardcode |
 | `FRONTEND_ORIGIN` | Railway | Must be the exact Vercel origin — set in Step 3, after Step 2 |
 | `NEXT_PUBLIC_BACKEND_URL` | Vercel | Must be `https://` — set in Step 2, after Step 1 |

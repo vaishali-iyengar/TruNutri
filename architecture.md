@@ -159,7 +159,7 @@ Implemented as `backend/scope/guard.ts`, using a **regex/keyword list**, not a s
 | Var | Where | Purpose |
 |---|---|---|
 | `GROQ_API_KEY` | Railway (backend) | Model calls |
-| `GROQ_MODEL` | Railway (backend) | Model id override, defaults to `llama-3.3-70b-versatile` |
+| `GROQ_MODEL` | Railway (backend) | Model id override, defaults to `openai/gpt-oss-120b` |
 | `DATABASE_URL` | Railway (backend, auto-set by Postgres add-on) | Postgres connection |
 | `FRONTEND_ORIGIN` | Railway (backend) | CORS allowlist, set to the Vercel URL |
 | `NEXT_PUBLIC_BACKEND_URL` | Vercel (frontend) | Base URL the frontend calls |
@@ -192,7 +192,7 @@ Groq (OpenAI-compatible chat completions API), forced structured output via func
 
 ```ts
 const response = await groq.chat.completions.create({
-  model: "llama-3.3-70b-versatile",
+  model: "openai/gpt-oss-120b",
   messages: [{ role: "system", content: SYSTEM_PROMPT }, ...history],
   tools: [{
     type: "function",
