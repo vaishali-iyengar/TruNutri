@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/*
+ * "Warm Editorial Wellness" design system — ported from
+ * stitch_ai_nutrition_assistant_ui/warm_editorial_wellness/DESIGN.md.
+ * Color tokens are copied verbatim from that system's Tailwind config.
+ */
+@theme inline {
+  --color-surface-tint: #396758;
+  --color-secondary-fixed: #ffdea0;
+  --color-primary-fixed-dim: #a0d1be;
+  --color-outline-variant: #c0c8c3;
+  --color-on-tertiary-container: #ff9376;
+  --color-inverse-on-surface: #f5f0e7;
+  --color-on-tertiary: #ffffff;
+  --color-secondary-fixed-dim: #f6be3b;
+  --color-surface: #fef9f0;
+  --color-secondary-container: #fcc340;
+  --color-surface-container-low: #f8f3ea;
+  --color-primary-fixed: #bcedda;
+  --color-outline: #717975;
+  --color-error: #ba1a1a;
+  --color-surface-container-high: #ece8df;
+  --color-tertiary-container: #772a15;
+  --color-surface-dim: #ded9d1;
+  --color-primary: #003427;
+  --color-on-secondary-fixed-variant: #5c4300;
+  --color-on-primary-container: #8abaa8;
+  --color-surface-bright: #fef9f0;
+  --color-background: #fef9f0;
+  --color-tertiary-fixed-dim: #ffb4a1;
+  --color-secondary: #795900;
+  --color-on-tertiary-fixed: #3c0800;
+  --color-on-tertiary-fixed-variant: #7c2e19;
+  --color-surface-container: #f2ede4;
+  --color-surface-variant: #e7e2d9;
+  --color-inverse-surface: #32302b;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface: #1d1c16;
+  --color-surface-container-highest: #e7e2d9;
+  --color-error-container: #ffdad6;
+  --color-on-secondary: #ffffff;
+  --color-on-primary-fixed: #002118;
+  --color-on-primary-fixed-variant: #204f41;
+  --color-tertiary: #591403;
+  --color-on-background: #1d1c16;
+  --color-on-primary: #ffffff;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+  --color-on-secondary-fixed: #261900;
+  --color-primary-container: #1c4b3d;
+  --color-tertiary-fixed: #ffdbd2;
+  --color-on-surface-variant: #404945;
+  --color-on-secondary-container: #6f5100;
+  --color-inverse-primary: #a0d1be;
+
+  --font-display: var(--font-display-family), "Georgia", serif;
+  --font-sans: var(--font-body-family), "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+}

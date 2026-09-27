@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.local
+dist/
+.next/
+backend/dist/
+backend/src/evals/results/*.json
+.DS_Store
