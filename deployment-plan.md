@@ -78,17 +78,18 @@ The steps below are kept as the reference procedure for next time (e.g. redeploy
 
 ## Step 3 — Close the Loop: Fix CORS on Railway
 
-**✅ Done — with a real gotcha not in the original plan.** Setting `FRONTEND_ORIGIN=https://tru-nutri.vercel.app` (no trailing slash — the exact value a browser's `Origin` header sends) resulted in Railway serving the CORS response header **with** a trailing slash (`https://tru-nutri.vercel.app/`), confirmed via raw header bytes. The identical code running locally with the identical env var does *not* add a slash, so this happens somewhere in Railway's proxy layer, not in our app. Browsers correctly reject the mismatch as invalid CORS (confirmed with a real headless browser: `fetch()` failed with an explicit "not equal to the supplied origin" error). **Workaround, verified empirically:** set the env var *with* a trailing slash (`https://tru-nutri.vercel.app/`) — this results in the header going out *without* one, and a real browser then completes the request with zero console errors. Root cause not fully understood; if this changes in a future Railway update, re-check with the raw-header `curl` command below before assuming the trailing-slash workaround is still needed.
+**✅ Done.** `cors()` echoes back `FRONTEND_ORIGIN` verbatim as the `Access-Control-Allow-Origin` header — no Railway-side rewriting involved, despite what an earlier version of this doc claimed. That claim came from testing the header immediately after changing the env var, while the *previous* deployment (still holding the old value) was still serving traffic — a race with the in-flight redeploy, not a platform quirk. The fix is simply: **set `FRONTEND_ORIGIN` to the exact origin with no trailing slash**, and confirm the redeploy has actually finished (check deployment status, not just a fixed `sleep`) before re-testing the header.
 
 1. Go back to the Railway backend service's environment variables.
-2. Set `FRONTEND_ORIGIN` to the real Vercel URL from Step 2.5. **Despite the "no trailing slash" advice further down this doc, add one anyway** (`https://your-app.vercel.app/`) — see the gotcha above. Verify with:
+2. Set `FRONTEND_ORIGIN` to the real Vercel URL from Step 2.5, **exactly**, no trailing slash (e.g. `https://your-app.vercel.app`).
+3. Redeploy/restart the Railway service, and **wait for it to actually finish** (`railway deployment list` or the dashboard) before verifying — the env var only takes effect once the new deployment is live, and testing against the old one will show the old value.
+4. Verify:
    ```bash
    curl -s -D - -o /dev/null -X OPTIONS https://<railway-domain>/api/chat \
      -H "Origin: https://<vercel-domain>" \
      -H "Access-Control-Request-Method: POST" | grep -i access-control-allow-origin
    ```
-   The value after `access-control-allow-origin:` must exactly match your Vercel origin with **no** trailing slash — adjust which way you set the env var until this is true, don't assume either way.
-3. Redeploy/restart the Railway service so the new env var takes effect (`cors()` reads it at process startup, not per-request).
+   The value after `access-control-allow-origin:` must exactly match your Vercel origin — same scheme, same host, **no trailing slash**.
 
 This is the step [edge-cases.md](edge-cases.md) explicitly warns is easy to forget — the app will *look* deployed after Step 2, but every request from the real frontend will fail CORS until this step happens.
 
