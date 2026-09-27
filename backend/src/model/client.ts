@@ -5,7 +5,10 @@ import { ChatResponseSchema, type ChatResponse, type Claim } from "../schema/res
 import { SYSTEM_PROMPT } from "../prompts/system.js";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+// llama-3.3-70b-versatile was removed from Groq's model catalog (confirmed via
+// GET /v1/models returning model_not_found for it as of 2026-09-27); switched
+// to openai/gpt-oss-120b as the closest available capability tier.
+const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 const TOOL_NAME = "respond";
 
 export interface HistoryMessage {
