@@ -419,7 +419,10 @@ export default function Home() {
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Ask a question…"
                 disabled={pending}
-                className="flex-1 bg-transparent text-sm text-on-surface outline-none placeholder:text-outline sm:text-base"
+                // iOS Safari auto-zooms the page on focus if a text input's
+                // font-size is under 16px — text-base (16px) everywhere,
+                // not just sm:, is what actually prevents that.
+                className="flex-1 bg-transparent text-base text-on-surface outline-none placeholder:text-outline"
               />
               <button
                 onClick={() => sendMessage()}
