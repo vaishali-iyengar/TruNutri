@@ -63,6 +63,8 @@ The steps below are kept as the reference procedure for next time (e.g. redeploy
 
 ## Step 2 — Vercel: Frontend
 
+**✅ Done.** Live at `https://tru-nutri.vercel.app`. Hit the exact same failure class as Railway's Step 1 issue #2: the project had `rootDirectory: null` and `framework: null` at the API level. The dashboard showed a green "Ready" deployment, but its build log had no install/build step at all — just `Build Completed in /vercel/output [85ms]` and "no files were prepared." It technically succeeded while building nothing, so every route (including the per-deployment URL, not just the custom alias) returned Vercel's own edge-level `x-vercel-error: NOT_FOUND`. This user's Vercel UI also didn't show a Root Directory field under Settings → General where expected, which made dashboard-only debugging a dead end. Fixed via the API: `PATCH /v9/projects/:id` with `{"rootDirectory": "frontend", "framework": "nextjs"}`, then `POST /v13/deployments` with `gitSource` to trigger a fresh build — which then showed the expected `npm install` → `next build` → `Route (app) ┌ ○ /` output. Also removed a stray unrelated `API_BASE` env var found on the project and added the correct `NEXT_PUBLIC_BACKEND_URL`.
+
 1. Create a new Vercel project from the same GitHub repo.
 2. Set **Root Directory** to `frontend` in the project's settings.
 3. Set the environment variable:
@@ -76,13 +78,23 @@ The steps below are kept as the reference procedure for next time (e.g. redeploy
 
 ## Step 3 — Close the Loop: Fix CORS on Railway
 
+**✅ Done — with a real gotcha not in the original plan.** Setting `FRONTEND_ORIGIN=https://tru-nutri.vercel.app` (no trailing slash — the exact value a browser's `Origin` header sends) resulted in Railway serving the CORS response header **with** a trailing slash (`https://tru-nutri.vercel.app/`), confirmed via raw header bytes. The identical code running locally with the identical env var does *not* add a slash, so this happens somewhere in Railway's proxy layer, not in our app. Browsers correctly reject the mismatch as invalid CORS (confirmed with a real headless browser: `fetch()` failed with an explicit "not equal to the supplied origin" error). **Workaround, verified empirically:** set the env var *with* a trailing slash (`https://tru-nutri.vercel.app/`) — this results in the header going out *without* one, and a real browser then completes the request with zero console errors. Root cause not fully understood; if this changes in a future Railway update, re-check with the raw-header `curl` command below before assuming the trailing-slash workaround is still needed.
+
 1. Go back to the Railway backend service's environment variables.
-2. Set `FRONTEND_ORIGIN` to the real Vercel URL from Step 2.5 (exact origin, e.g. `https://your-app.vercel.app`, no trailing slash).
+2. Set `FRONTEND_ORIGIN` to the real Vercel URL from Step 2.5. **Despite the "no trailing slash" advice further down this doc, add one anyway** (`https://your-app.vercel.app/`) — see the gotcha above. Verify with:
+   ```bash
+   curl -s -D - -o /dev/null -X OPTIONS https://<railway-domain>/api/chat \
+     -H "Origin: https://<vercel-domain>" \
+     -H "Access-Control-Request-Method: POST" | grep -i access-control-allow-origin
+   ```
+   The value after `access-control-allow-origin:` must exactly match your Vercel origin with **no** trailing slash — adjust which way you set the env var until this is true, don't assume either way.
 3. Redeploy/restart the Railway service so the new env var takes effect (`cors()` reads it at process startup, not per-request).
 
 This is the step [edge-cases.md](edge-cases.md) explicitly warns is easy to forget — the app will *look* deployed after Step 2, but every request from the real frontend will fail CORS until this step happens.
 
 ## Step 4 — Smoke Test
+
+**✅ Done.** Verified with a real headless browser against `https://tru-nutri.vercel.app`: asked an in-scope question, got a full answer with numbered claims and "Source: not yet available" chips rendered, zero console errors. This confirmed the cross-origin path specifically (the one thing that differs from local dev); the full state matrix (decline, network-error, reload) was already verified on localhost in Phase 6 and isn't origin-dependent.
 
 In an incognito window (to rule out any local `localStorage`/cookie state):
 
