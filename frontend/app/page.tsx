@@ -185,7 +185,7 @@ function AnswerText({ text }: { text: string }) {
   );
 }
 
-function ClaimsList({ claims }: { claims: Claim[] }) {
+function ClaimsList({ claims, onSourceClick }: { claims: Claim[]; onSourceClick: () => void }) {
   if (claims.length === 0) return null;
   return (
     <div className="mt-4 border-t border-outline-variant/50 pt-3">
@@ -198,9 +198,13 @@ function ClaimsList({ claims }: { claims: Claim[] }) {
             </span>
             <div className="flex-1 text-sm text-on-surface sm:text-base">
               <p>{c.text}</p>
-              <span className="mt-1.5 inline-block rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 sm:text-xs">
+              <button
+                type="button"
+                onClick={onSourceClick}
+                className="mt-1.5 inline-block rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 transition hover:bg-surface-container hover:text-primary sm:text-xs"
+              >
                 Source: not yet available
-              </span>
+              </button>
             </div>
           </li>
         ))}
@@ -425,7 +429,7 @@ export default function Home() {
                           <span className="text-sm font-semibold text-primary sm:text-base">TruNutri</span>
                         </div>
                         <AnswerText text={m.content} />
-                        {m.claims && <ClaimsList claims={m.claims} />}
+                        {m.claims && <ClaimsList claims={m.claims} onSourceClick={() => setSourcesOpen(true)} />}
                       </div>
                     )}
                   </div>
