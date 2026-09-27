@@ -78,6 +78,14 @@ function ArrowUpIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function PlusIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const TAG_STYLES = {
   primary: "bg-primary-fixed text-on-primary-fixed-variant",
   secondary: "bg-secondary-fixed text-on-secondary-fixed-variant",
@@ -259,36 +267,38 @@ export default function Home() {
   }
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-background">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-background">
       {/* Ambient botanical backdrop, decorative only */}
       <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary-fixed-dim/20 blur-3xl" />
       <div className="pointer-events-none absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-secondary-fixed/25 blur-3xl" />
 
-      <header className="relative z-10 flex items-center justify-between border-b border-outline-variant/40 bg-surface/90 px-6 py-3 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-container text-on-primary shadow-sm">
+      <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-outline-variant/40 bg-surface/90 px-4 py-3 backdrop-blur sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary shadow-sm">
             <LeafIcon className="h-5 w-5" />
           </div>
-          <div>
-            <h1 className="font-display text-lg font-semibold leading-tight tracking-tight text-primary">
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-lg font-semibold leading-tight tracking-tight text-primary">
               TruNutri
             </h1>
-            <p className="text-[11px] font-semibold uppercase leading-tight tracking-wider text-on-surface-variant">
+            <p className="truncate text-[11px] font-semibold uppercase leading-tight tracking-wider text-on-surface-variant">
               Ask. Learn. Eat smarter.
             </p>
           </div>
         </div>
         <button
           onClick={newConversation}
-          className="rounded-full border border-outline-variant/60 bg-surface-container-lowest px-4 py-1.5 text-sm font-semibold text-primary shadow-sm transition hover:bg-surface-container-low"
+          aria-label="New conversation"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-1.5"
         >
-          New conversation
+          <PlusIcon className="h-4 w-4 sm:hidden" />
+          <span className="hidden text-sm font-semibold sm:inline">New conversation</span>
         </button>
       </header>
 
       <div className="relative z-10 flex flex-1 overflow-hidden">
-        <main className="flex flex-1 flex-col">
-          <div className="flex-1 overflow-y-auto px-6 py-8">
+        <main className="flex min-w-0 flex-1 flex-col">
+          <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
             {messages.length === 0 && (
               <div className="mx-auto max-w-2xl pt-6 text-center">
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-surface-container-low px-3.5 py-1.5 shadow-sm">
@@ -397,8 +407,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="border-t border-outline-variant/40 bg-surface/90 p-4 backdrop-blur">
-            <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-full bg-surface-container-lowest py-1.5 pl-5 pr-1.5 shadow-sm ring-1 ring-outline-variant/50 transition focus-within:ring-2 focus-within:ring-primary-container/40">
+          <div className="shrink-0 border-t border-outline-variant/40 bg-surface/90 p-3 backdrop-blur sm:p-4">
+            <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-full bg-surface-container-lowest py-1.5 pl-4 pr-1.5 shadow-sm ring-1 ring-outline-variant/50 transition focus-within:ring-2 focus-within:ring-primary-container/40 sm:pl-5">
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
