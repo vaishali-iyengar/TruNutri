@@ -319,7 +319,11 @@ export default function Home() {
       <div className="pointer-events-none absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-secondary-fixed/25 blur-3xl" />
 
       <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-outline-variant/40 bg-surface/90 px-4 py-3 backdrop-blur sm:px-6">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <button
+          onClick={newConversation}
+          aria-label="TruNutri home"
+          className="flex min-w-0 items-center gap-2 rounded-lg text-left transition hover:opacity-80 sm:gap-3"
+        >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary shadow-sm">
             <LeafIcon className="h-5 w-5" />
           </div>
@@ -331,7 +335,7 @@ export default function Home() {
               Ask. Learn. Eat smarter.
             </p>
           </div>
-        </div>
+        </button>
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={() => setSourcesOpen(true)}
