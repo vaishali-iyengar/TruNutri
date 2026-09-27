@@ -105,7 +105,7 @@ Goal: chat UI backed by the real endpoint, all four response states handled.
 
 Goal: the app is live at a public URL, both services talking to each other over the internet.
 
-- [ ] Push repo to GitHub.
+- [x] Push repo to GitHub. ✅ Pushed to `https://github.com/vaishali-iyengar/TruNutri` (public). The repo existed with a placeholder README from GitHub's auto-init; rebased local history on top of it rather than force-pushing, resolving the one conflict in favor of the real project README.
 - [ ] Railway: new project, deploy `backend/` as a service, attach a Postgres add-on, set `GROQ_API_KEY` and `FRONTEND_ORIGIN` (placeholder until Vercel URL exists), run the migration against the Railway Postgres instance.
 - [ ] Vercel: new project, deploy `frontend/`, set `NEXT_PUBLIC_BACKEND_URL` to the Railway backend's public URL.
 - [ ] Go back to Railway and set `FRONTEND_ORIGIN` to the real Vercel URL (CORS depends on this).
