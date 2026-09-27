@@ -86,6 +86,31 @@ function PlusIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function XIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Shared between the desktop sidebar and the mobile bottom sheet — same
+// placeholder content, Milestone 2 will make both read from real data.
+function SourcesPlaceholder() {
+  return (
+    <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest px-4 py-6 text-center">
+      <div className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface-container text-outline">
+        <ClipboardIcon className="h-4 w-4" />
+      </div>
+      <p className="text-sm font-semibold text-on-surface 2xl:text-base">Sources coming soon</p>
+      <p className="mt-1 text-xs leading-relaxed text-on-surface-variant 2xl:text-sm">
+        Linked citations for each claim will appear here in an upcoming update. For now, claims are shown without a
+        source.
+      </p>
+    </div>
+  );
+}
+
 const TAG_STYLES = {
   primary: "bg-primary-fixed text-on-primary-fixed-variant",
   secondary: "bg-secondary-fixed text-on-secondary-fixed-variant",
@@ -189,6 +214,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -290,14 +316,23 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <button
-          onClick={newConversation}
-          aria-label="New conversation"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-1.5"
-        >
-          <PlusIcon className="h-4 w-4 sm:hidden" />
-          <span className="hidden text-sm font-semibold sm:inline">New conversation</span>
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={() => setSourcesOpen(true)}
+            aria-label="Sources"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low xl:hidden"
+          >
+            <ClipboardIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={newConversation}
+            aria-label="New conversation"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-1.5"
+          >
+            <PlusIcon className="h-4 w-4 sm:hidden" />
+            <span className="hidden text-sm font-semibold sm:inline">New conversation</span>
+          </button>
+        </div>
       </header>
 
       <div className="relative z-10 flex flex-1 overflow-hidden">
@@ -442,17 +477,43 @@ export default function Home() {
             <h2 className="font-display text-base font-semibold text-primary 2xl:text-lg">Cited Evidence</h2>
           </div>
           <p className="mb-4 text-xs text-on-surface-variant 2xl:text-sm">Sources for this conversation</p>
-          <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest px-4 py-6 text-center">
-            <div className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface-container text-outline">
-              <ClipboardIcon className="h-4 w-4" />
-            </div>
-            <p className="text-sm font-semibold text-on-surface 2xl:text-base">Sources coming soon</p>
-            <p className="mt-1 text-xs leading-relaxed text-on-surface-variant 2xl:text-sm">
-              Linked citations for each claim will appear here in an upcoming update. For now, claims are shown
-              without a source.
-            </p>
-          </div>
+          <SourcesPlaceholder />
         </aside>
+      </div>
+
+      {/* Mobile/tablet-only bottom sheet — the desktop aside above takes over at xl:. Always rendered (not
+          conditionally mounted) so the open/close transition can actually animate. */}
+      <div
+        onClick={() => setSourcesOpen(false)}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-inverse-surface/40 transition-opacity duration-300 xl:hidden ${
+          sourcesOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cited Evidence"
+        className={`fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-3xl bg-surface-container-low p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl transition-transform duration-300 ease-out xl:hidden ${
+          sourcesOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="mx-auto mb-4 h-1 w-10 shrink-0 rounded-full bg-outline-variant" />
+        <div className="mb-1 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ClipboardIcon className="h-4 w-4 text-on-surface-variant" />
+            <h2 className="font-display text-base font-semibold text-primary">Cited Evidence</h2>
+          </div>
+          <button
+            onClick={() => setSourcesOpen(false)}
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-container"
+          >
+            <XIcon className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mb-4 text-xs text-on-surface-variant">Sources for this conversation</p>
+        <SourcesPlaceholder />
       </div>
     </div>
   );
