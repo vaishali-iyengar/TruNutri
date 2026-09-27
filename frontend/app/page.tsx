@@ -201,9 +201,10 @@ function ClaimsList({ claims, onSourceClick }: { claims: Claim[]; onSourceClick:
               <button
                 type="button"
                 onClick={onSourceClick}
-                className="mt-1.5 inline-block rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 transition hover:bg-surface-container hover:text-primary sm:text-xs"
+                className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 transition hover:bg-surface-container hover:text-primary sm:text-xs"
               >
                 Source: not yet available
+                <span aria-hidden="true">↗</span>
               </button>
             </div>
           </li>
