@@ -105,6 +105,14 @@ function ArrowUpRightIcon({ className = "h-3 w-3" }: { className?: string }) {
   );
 }
 
+function ChevronDownIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 // Shared between the desktop sidebar and the mobile bottom sheet — same
 // placeholder content, Milestone 2 will make both read from real data.
 function SourcesPlaceholder() {
@@ -197,30 +205,43 @@ function AnswerText({ text }: { text: string }) {
 }
 
 function ClaimsList({ claims, onSourceClick }: { claims: Claim[]; onSourceClick: () => void }) {
+  const [open, setOpen] = useState(true);
   if (claims.length === 0) return null;
   return (
     <div className="mt-4 border-t border-outline-variant/50 pt-3">
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-secondary sm:text-xs">Claims</p>
-      <ul className="flex flex-col gap-2">
-        {claims.map((c, i) => (
-          <li key={i} className="flex items-start gap-2.5 rounded-xl bg-surface-container-low px-3 py-2.5">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-container text-[11px] font-bold text-on-primary">
-              {i + 1}
-            </span>
-            <div className="flex-1 text-sm text-on-surface sm:text-base">
-              <p>{c.text}</p>
-              <button
-                type="button"
-                onClick={onSourceClick}
-                className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 transition hover:bg-surface-container hover:text-primary sm:text-xs"
-              >
-                Source: not yet available
-                <ArrowUpRightIcon className="h-2.5 w-2.5" />
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 text-left"
+      >
+        <span className="text-[11px] font-bold uppercase tracking-wider text-secondary sm:text-xs">
+          Claims &amp; sources ({claims.length})
+        </span>
+        <ChevronDownIcon className={`h-4 w-4 shrink-0 text-secondary transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`grid transition-all duration-200 ease-out ${open ? "mt-2 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+        <ul className="flex flex-col gap-2 overflow-hidden">
+          {claims.map((c, i) => (
+            <li key={i} className="flex items-start gap-2.5 rounded-xl bg-surface-container-low px-3 py-2.5">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-container text-[11px] font-bold text-on-primary">
+                {i + 1}
+              </span>
+              <div className="flex-1 text-sm text-on-surface sm:text-base">
+                <p>{c.text}</p>
+                <button
+                  type="button"
+                  onClick={onSourceClick}
+                  className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-surface-container-lowest px-2 py-0.5 text-[11px] font-medium text-on-surface-variant ring-1 ring-inset ring-outline-variant/60 transition hover:bg-surface-container hover:text-primary sm:text-xs"
+                >
+                  Source: not yet available
+                  <ArrowUpRightIcon className="h-2.5 w-2.5" />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
