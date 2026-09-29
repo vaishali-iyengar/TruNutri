@@ -16,7 +16,14 @@ interface ChatMessage {
   isNetworkError?: boolean;
 }
 
+interface HistoryEntry {
+  id: string;
+  title: string;
+  updatedAt: number;
+}
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000";
+const HISTORY_STORAGE_KEY = "chatHistory";
 
 const SUGGESTED_QUESTIONS = [
   { tag: "Food", tone: "primary" as const, question: "What's the difference between baking soda and baking powder?" },
@@ -94,6 +101,14 @@ function XIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function MenuIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Used instead of a plain "↗" unicode character — glyph fallback fonts for
 // that character differ across platforms (renders differently on mobile vs
 // desktop), while an SVG renders identically everywhere.
@@ -127,6 +142,39 @@ function SourcesPlaceholder() {
         source.
       </p>
     </div>
+  );
+}
+
+function ChatHistoryList({
+  history,
+  activeId,
+  onSelect,
+}: {
+  history: HistoryEntry[];
+  activeId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  if (history.length === 0) {
+    return <p className="text-xs text-on-surface-variant 2xl:text-sm">No conversations yet.</p>;
+  }
+  return (
+    <ul className="flex flex-col gap-1 overflow-y-auto">
+      {history.map((h) => (
+        <li key={h.id}>
+          <button
+            type="button"
+            onClick={() => onSelect(h.id)}
+            className={`w-full truncate rounded-xl px-3 py-2 text-left text-sm transition ${
+              h.id === activeId
+                ? "bg-primary-container text-on-primary-container font-semibold"
+                : "text-on-surface-variant hover:bg-surface-container"
+            }`}
+          >
+            {h.title}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -205,7 +253,7 @@ function AnswerText({ text }: { text: string }) {
 }
 
 function ClaimsList({ claims, onSourceClick }: { claims: Claim[]; onSourceClick: () => void }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   if (claims.length === 0) return null;
   return (
     <div className="mt-4 border-t border-outline-variant/50 pt-3">
@@ -252,10 +300,18 @@ export default function Home() {
   const [pending, setPending] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [chatHistory, setChatHistory] = useState<HistoryEntry[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setConversationId(localStorage.getItem("conversationId"));
+    try {
+      const stored = localStorage.getItem(HISTORY_STORAGE_KEY);
+      if (stored) setChatHistory(JSON.parse(stored));
+    } catch {
+      // Corrupt/old localStorage value — ignore and start fresh.
+    }
   }, []);
 
   useEffect(() => {
@@ -265,6 +321,50 @@ export default function Home() {
     if (messages.length === 0 && !pending) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, pending]);
+
+  function upsertHistoryEntry(id: string, firstMessageText: string) {
+    setChatHistory((prev) => {
+      const existing = prev.find((h) => h.id === id);
+      const title = existing?.title ?? firstMessageText.slice(0, 60);
+      const next = [{ id, title, updatedAt: Date.now() }, ...prev.filter((h) => h.id !== id)];
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function removeHistoryEntry(id: string) {
+    setChatHistory((prev) => {
+      const next = prev.filter((h) => h.id !== id);
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  async function loadConversation(id: string) {
+    setHistoryOpen(false);
+    if (id === conversationId) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/conversations/${id}/messages`);
+      if (!res.ok) {
+        removeHistoryEntry(id);
+        return;
+      }
+      const data = await res.json();
+      setConversationId(id);
+      localStorage.setItem("conversationId", id);
+      setMessages(
+        data.messages.map((m: { role: "user" | "assistant"; content: string; claims: Claim[]; declined: boolean }) => ({
+          role: m.role,
+          content: m.content,
+          claims: m.claims,
+          declined: m.declined,
+        })),
+      );
+    } catch {
+      // Network failure — leave the current conversation untouched.
+    }
+  }
 
   async function postChat(convId: string | null, text: string) {
     const res = await fetch(`${BACKEND_URL}/api/chat`, {
@@ -308,6 +408,10 @@ export default function Home() {
         localStorage.setItem("conversationId", data.conversationId);
       }
 
+      if (data.conversationId) {
+        upsertHistoryEntry(data.conversationId, text);
+      }
+
       setMessages((prev) => [
         ...prev,
         {
@@ -340,11 +444,19 @@ export default function Home() {
       <div className="pointer-events-none absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-secondary-fixed/25 blur-3xl" />
 
       <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-outline-variant/40 bg-surface/90 px-4 py-3 backdrop-blur sm:px-6">
-        <button
-          onClick={newConversation}
-          aria-label="TruNutri home"
-          className="flex min-w-0 items-center gap-2 rounded-lg text-left transition hover:opacity-80 sm:gap-3"
-        >
+        <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+          <button
+            onClick={() => setHistoryOpen(true)}
+            aria-label="Chat history"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-lowest text-primary shadow-sm transition hover:bg-surface-container-low xl:hidden"
+          >
+            <MenuIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={newConversation}
+            aria-label="TruNutri home"
+            className="flex min-w-0 items-center gap-2 rounded-lg text-left transition hover:opacity-80 sm:gap-3"
+          >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary shadow-sm">
             <LeafIcon className="h-5 w-5" />
           </div>
@@ -356,7 +468,8 @@ export default function Home() {
               Ask. Learn. Eat smarter.
             </p>
           </div>
-        </button>
+          </button>
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={() => setSourcesOpen(true)}
@@ -377,6 +490,15 @@ export default function Home() {
       </header>
 
       <div className="relative z-10 flex flex-1 overflow-hidden">
+        <aside className="hidden w-72 shrink-0 flex-col overflow-hidden border-r border-outline-variant/40 bg-surface-container-low/60 p-5 xl:flex">
+          <div className="mb-1 flex items-center gap-2">
+            <MenuIcon className="h-4 w-4 text-on-surface-variant" />
+            <h2 className="font-display text-base font-semibold text-primary 2xl:text-lg">Chat History</h2>
+          </div>
+          <p className="mb-4 text-xs text-on-surface-variant 2xl:text-sm">Pick up a previous conversation</p>
+          <ChatHistoryList history={chatHistory} activeId={conversationId} onSelect={loadConversation} />
+        </aside>
+
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
             {messages.length === 0 && (
@@ -555,6 +677,40 @@ export default function Home() {
         </div>
         <p className="mb-4 text-xs text-on-surface-variant">Sources for this conversation</p>
         <SourcesPlaceholder />
+      </div>
+
+      {/* Mobile/tablet-only chat-history drawer — the desktop aside above takes over at xl:. Always
+          rendered (not conditionally mounted) so the open/close transition can actually animate. */}
+      <div
+        onClick={() => setHistoryOpen(false)}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-inverse-surface/40 transition-opacity duration-300 xl:hidden ${
+          historyOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Chat History"
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[80vw] flex-col overflow-hidden bg-surface-container-low p-5 shadow-2xl transition-transform duration-300 ease-out xl:hidden ${
+          historyOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="mb-1 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MenuIcon className="h-4 w-4 text-on-surface-variant" />
+            <h2 className="font-display text-base font-semibold text-primary">Chat History</h2>
+          </div>
+          <button
+            onClick={() => setHistoryOpen(false)}
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-container"
+          >
+            <XIcon className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mb-4 text-xs text-on-surface-variant">Pick up a previous conversation</p>
+        <ChatHistoryList history={chatHistory} activeId={conversationId} onSelect={loadConversation} />
       </div>
     </div>
   );

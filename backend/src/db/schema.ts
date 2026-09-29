@@ -13,6 +13,7 @@ export const messages = pgTable("messages", {
   role: text("role").notNull(), // 'user' | 'assistant'
   content: text("content").notNull(),
   claims: jsonb("claims").notNull().default([]), // [{ text, source }]
+  kind: text("kind").notNull().default("normal"), // 'normal' | 'declined' — lets reloaded history show the decline badge
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

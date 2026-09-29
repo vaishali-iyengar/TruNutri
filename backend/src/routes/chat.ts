@@ -16,6 +16,39 @@ chatRouter.post("/chat", async (req, res, next) => {
   }
 });
 
+// Lets the frontend restore a previous conversation's messages when the user
+// picks it from the chat-history sidebar. There's no auth/user concept in
+// this app — any conversation ID is fetchable by anyone who has it, same
+// trust model as the existing POST /chat (a browser only ever knows the IDs
+// it created itself, via localStorage).
+chatRouter.get("/conversations/:id/messages", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isValidUuid(id)) {
+      return res.status(400).json({ error: "conversationId must be a valid UUID" });
+    }
+
+    const [existing] = await db.select().from(conversations).where(eq(conversations.id, id));
+    if (!existing) {
+      return res.status(404).json({ error: "conversationId not found" });
+    }
+
+    const rows = await db.select().from(messages).where(eq(messages.conversationId, id)).orderBy(asc(messages.createdAt));
+
+    return res.json({
+      conversationId: id,
+      messages: rows.map((m) => ({
+        role: m.role,
+        content: m.content,
+        claims: m.claims,
+        declined: m.kind === "declined",
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 async function handleChat(
   body: { conversationId: string | null; message: string },
   res: import("express").Response,
@@ -53,7 +86,7 @@ async function handleChat(
     });
     await db.insert(messages).values([
       { conversationId: convId, role: "user", content: message, claims: [] },
-      { conversationId: convId, role: "assistant", content: DECLINE_MESSAGE, claims: [] },
+      { conversationId: convId, role: "assistant", content: DECLINE_MESSAGE, claims: [], kind: "declined" },
     ]);
     return res.json({
       conversationId: convId,
@@ -123,7 +156,7 @@ async function handleChat(
     });
     await db.insert(messages).values([
       { conversationId: convId, role: "user", content: message, claims: [] },
-      { conversationId: convId, role: "assistant", content: DECLINE_MESSAGE, claims: [] },
+      { conversationId: convId, role: "assistant", content: DECLINE_MESSAGE, claims: [], kind: "declined" },
     ]);
     return res.json({
       conversationId: convId,

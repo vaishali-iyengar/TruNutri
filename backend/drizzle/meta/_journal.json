@@ -8,6 +8,13 @@
       "when": 1790416656334,
       "tag": "0000_breezy_phantom_reporter",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790695289779,
+      "tag": "0001_lush_power_man",
+      "breakpoints": true
     }
   ]
 }
