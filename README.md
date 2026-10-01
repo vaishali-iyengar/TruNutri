@@ -1,6 +1,16 @@
-# AI Nutrition Assistant
+# TruNutri
 
-Prototype chatbot answering questions about food, nutrition, and food safety. See [problem-statement.md](problem-statement.md) for the brief and [architecture.md](architecture.md) for the full design.
+TruNutri is a chat assistant for everyday food, nutrition, and food-safety questions — things like "is it safe to eat eggs past the sell-by date?" or "what foods are high in vitamin C?". Ask a question in plain language and get back a direct answer, broken down into individual claims so you can see exactly what's being asserted rather than one opaque paragraph.
+
+It deliberately stays in its lane: questions outside food/nutrition/food-safety (medical diagnoses, unrelated topics, etc.) are declined rather than answered, since the assistant is meant to be a focused, trustworthy source for this one domain rather than a general-purpose chatbot. Answers currently come from the underlying model's own knowledge — there's no external source lookup yet, so claims are shown without a citation (see [problem-statement.md](problem-statement.md) for the brief and [architecture.md](architecture.md) for the full design, including where source attribution is headed next).
+
+## Tech stack
+
+**Frontend** — [Next.js](https://nextjs.org/) (App Router, React 19) with [Tailwind CSS v4](https://tailwindcss.com/), deployed on [Vercel](https://vercel.com/). A single-page chat UI: message list, input bar, collapsible claims-and-sources per answer, and a conversation-history sidebar backed by `localStorage` (no login/accounts).
+
+**Backend** — [Express](https://expressjs.com/) + TypeScript, deployed on [Railway](https://railway.app/). Exposes a small REST API (`POST /api/chat`, `GET /api/conversations/:id/messages`) that owns the model call and all persistence — the browser never talks to the model provider directly. Conversations and messages are stored in Postgres via [Drizzle ORM](https://orm.drizzle.team/), with [Zod](https://zod.dev/) validating every model response against a strict schema before it's returned to the client.
+
+**Model** — [Groq](https://groq.com/) (`groq-sdk`), currently running `openai/gpt-oss-120b` via Groq's low-latency inference API, using forced tool-calling so the model's output is structured JSON (answer + claims) rather than free-form prose. Scope enforcement runs both before and after the model call, so off-topic questions are declined without ever reaching the model, and off-topic model output is caught and declined even if the model drifts.
 
 ## Structure
 
