@@ -6,11 +6,17 @@ It deliberately stays in its lane: questions outside food/nutrition/food-safety 
 
 ## Tech stack
 
-**Frontend** — [Next.js](https://nextjs.org/) (App Router, React 19) with [Tailwind CSS v4](https://tailwindcss.com/), deployed on [Vercel](https://vercel.com/). A single-page chat UI: message list, input bar, collapsible claims-and-sources per answer, and a conversation-history sidebar backed by `localStorage` (no login/accounts).
+| Layer | Choice | Deploy target |
+| --- | --- | --- |
+| Frontend | [Next.js](https://nextjs.org/) (App Router, React 19), [Tailwind CSS v4](https://tailwindcss.com/) | [Vercel](https://vercel.com/) |
+| Backend | [Express](https://expressjs.com/) + TypeScript, [Drizzle ORM](https://orm.drizzle.team/) + Postgres, [Zod](https://zod.dev/) for response validation | [Railway](https://railway.app/) |
+| Model | [Groq](https://groq.com/) (`groq-sdk`), model `openai/gpt-oss-120b` | Groq-hosted inference API |
 
-**Backend** — [Express](https://expressjs.com/) + TypeScript, deployed on [Railway](https://railway.app/). Exposes a small REST API (`POST /api/chat`, `GET /api/conversations/:id/messages`) that owns the model call and all persistence — the browser never talks to the model provider directly. Conversations and messages are stored in Postgres via [Drizzle ORM](https://orm.drizzle.team/), with [Zod](https://zod.dev/) validating every model response against a strict schema before it's returned to the client.
+**Frontend** — a single-page chat UI: message list, input bar, collapsible claims-and-sources per answer, and a conversation-history sidebar backed by `localStorage` (no login/accounts).
 
-**Model** — [Groq](https://groq.com/) (`groq-sdk`), currently running `openai/gpt-oss-120b` via Groq's low-latency inference API, using forced tool-calling so the model's output is structured JSON (answer + claims) rather than free-form prose. Scope enforcement runs both before and after the model call, so off-topic questions are declined without ever reaching the model, and off-topic model output is caught and declined even if the model drifts.
+**Backend** — exposes a small REST API (`POST /api/chat`, `GET /api/conversations/:id/messages`) that owns the model call and all persistence — the browser never talks to the model provider directly. Conversations and messages are stored in Postgres via Drizzle ORM, with Zod validating every model response against a strict schema before it's returned to the client.
+
+**Model** — runs via Groq's low-latency inference API, using forced tool-calling so the model's output is structured JSON (answer + claims) rather than free-form prose. Scope enforcement runs both before and after the model call, so off-topic questions are declined without ever reaching the model, and off-topic model output is caught and declined even if the model drifts.
 
 ## Structure
 
