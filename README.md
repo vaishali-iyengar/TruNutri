@@ -18,11 +18,6 @@ It deliberately stays in its lane: questions outside food/nutrition/food-safety 
 
 **Model** — runs via Groq's low-latency inference API, using forced tool-calling so the model's output is structured JSON (answer + claims) rather than free-form prose. Scope enforcement runs both before and after the model call, so off-topic questions are declined without ever reaching the model, and off-topic model output is caught and declined even if the model drifts.
 
-## Structure
-
-- `frontend/` — Next.js app (deploy target: Vercel)
-- `backend/` — Express + TypeScript API (deploy target: Railway)
-
 ## Local development
 
 **Postgres**
